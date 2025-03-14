@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dns-rules-converter"
+version = "0.1.0"
+description = "Convert DNS rules and IP ranges to JSON format"
+requires-python = ">=3.8"
+dependencies = [
+    "ipaddress>=1.0.23",
+    "requests>=2.31.0",
+]
+
+[project.scripts]
+cn-rules-converter = "dns_rules_converter.main:main" 

@@ -1,0 +1,86 @@
+name: Auto Update Rules
+
+on:
+  schedule:
+    - cron: '20 16 * * *'  # Runs at 00:20 UTC+8
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Generate JSON rules
+        run: cn-rules-converter
+
+      - name: Set up sing-box
+        run: |
+          mkdir -p /tmp/sing-box
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/sagernet/sing-box \
+            rule-set compile cn-dns-and-ip-list.json
+
+      - name: Commit and push if changed
+        id: commit
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add cn-dns-and-ip-list.json cn-dns-and-ip-list.srs
+          if git commit -m "chore: update rules $(date +'%Y-%m-%d')"; then
+            git push
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        if: steps.commit.outputs.changes == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }} - ${{ github.event.repository.updated_at }}
+          tag_name: ${{ github.ref_name }}-${{ github.run_number }}
+          files: cn-dns-and-ip-list.srs
+          body: |
+            Auto-generated release for sing-box rules
+            
+            ## Usage
+            
+            Add to your sing-box configuration:
+            ```json
+            {
+              "route": {
+                "rule_set": [
+                  {
+                    "tag": "cn-rules",
+                    "type": "remote",
+                    "format": "binary",
+                    "url": "${{ github.server_url }}/${{ github.repository }}/releases/latest/download/cn-dns-and-ip-list.srs",
+                    "download_detour": "direct"
+                  }
+                ],
+                "rules": [
+                  {
+                    "rule_set": "cn-rules",
+                    "outbound": "direct"
+                  }
+                ]
+              }
+            }
+            ``` 
