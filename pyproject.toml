@@ -8,9 +8,12 @@ version = "0.1.0"
 description = "Convert DNS rules and IP ranges to JSON format"
 requires-python = ">=3.8"
 dependencies = [
-    "ipaddress>=1.0.23",
     "requests>=2.31.0",
+    "click>=8.0.0",
 ]
 
 [project.scripts]
-cn-rules-converter = "dns_rules_converter.main:main" 
+cn-rules = "dns_rules_converter.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dns_rules_converter"] 

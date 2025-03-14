@@ -1,1 +1,0 @@
-"""DNS Rules Converter package.""" 

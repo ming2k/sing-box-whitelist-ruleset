@@ -25,8 +25,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
-      - name: Generate JSON rules
-        run: cn-rules-converter
+      - name: Generate rules
+        run: cn-rules all
 
       - name: Set up sing-box
         run: |
@@ -35,20 +35,19 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             ghcr.io/sagernet/sing-box \
-            rule-set compile cn-dns-and-ip-list.json
-
-      - name: Prepare for commit
-        run: |
-          # Remove the files from .gitignore
-          sed -i '/cn-dns-and-ip-list.json/d' .gitignore
-          sed -i '/cn-dns-and-ip-list.srs/d' .gitignore
+            rule-set compile cn-domains.json
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ghcr.io/sagernet/sing-box \
+            rule-set compile cn-ip-cidr.json
 
       - name: Commit and push if changed
         id: commit
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add cn-dns-and-ip-list.json cn-dns-and-ip-list.srs .gitignore
+          git add cn-domains.json cn-domains.srs cn-ip-cidr.json cn-ip-cidr.srs
           if git commit -m "chore: update rules $(date +'%Y-%m-%d')"; then
             git push
             echo "changes=true" >> $GITHUB_OUTPUT
@@ -62,7 +61,9 @@ jobs:
         with:
           name: Release ${{ github.ref_name }} - ${{ github.event.repository.updated_at }}
           tag_name: ${{ github.ref_name }}-${{ github.run_number }}
-          files: cn-dns-and-ip-list.srs
+          files: |
+            cn-domains.srs
+            cn-ip-cidr.srs
           body: |
             Auto-generated release for sing-box rules
             
@@ -74,16 +75,23 @@ jobs:
               "route": {
                 "rule_set": [
                   {
-                    "tag": "cn-rules",
+                    "tag": "cn-domains",
                     "type": "remote",
                     "format": "binary",
-                    "url": "${{ github.server_url }}/${{ github.repository }}/releases/latest/download/cn-dns-and-ip-list.srs",
+                    "url": "${{ github.server_url }}/${{ github.repository }}/releases/latest/download/cn-domains.srs",
+                    "download_detour": "direct"
+                  },
+                  {
+                    "tag": "cn-ip-cidr",
+                    "type": "remote",
+                    "format": "binary",
+                    "url": "${{ github.server_url }}/${{ github.repository }}/releases/latest/download/cn-ip-cidr.srs",
                     "download_detour": "direct"
                   }
                 ],
                 "rules": [
                   {
-                    "rule_set": "cn-rules",
+                    "rule_set": ["cn-domains", "cn-ip-cidr"],
                     "outbound": "direct"
                   }
                 ]
