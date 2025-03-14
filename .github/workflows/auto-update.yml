@@ -37,12 +37,18 @@ jobs:
             ghcr.io/sagernet/sing-box \
             rule-set compile cn-dns-and-ip-list.json
 
+      - name: Prepare for commit
+        run: |
+          # Remove the files from .gitignore
+          sed -i '/cn-dns-and-ip-list.json/d' .gitignore
+          sed -i '/cn-dns-and-ip-list.srs/d' .gitignore
+
       - name: Commit and push if changed
         id: commit
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add cn-dns-and-ip-list.json cn-dns-and-ip-list.srs
+          git add cn-dns-and-ip-list.json cn-dns-and-ip-list.srs .gitignore
           if git commit -m "chore: update rules $(date +'%Y-%m-%d')"; then
             git push
             echo "changes=true" >> $GITHUB_OUTPUT

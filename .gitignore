@@ -35,8 +35,8 @@ ENV/
 .DS_Store
 
 # Project specific
-cn-dns-and-ip-list.json
-cn-dns-and-ip-list.srs
+# cn-dns-and-ip-list.json
+# cn-dns-and-ip-list.srs
 .hatch/
 
 project-prompt.txt
