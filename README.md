@@ -79,6 +79,8 @@ If you want to generate rules locally:
    cn-rules ip -o custom-ip.json
    ```
 
+Format doc: https://sing-box.sagernet.org/configuration/rule-set/headless-rule
+
 ## License
 
 MIT
@@ -87,3 +89,5 @@ MIT
 
 - Domain list from [felixonmars/dnsmasq-china-list](https://github.com/felixonmars/dnsmasq-china-list)
 - IP data from [APNIC](https://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest)
+
+
