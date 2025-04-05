@@ -19,7 +19,8 @@ def fetch_dns_rules(url: str) -> Dict[str, Any]:
             if len(parts) >= 2:
                 domain = parts[1].lstrip('.')
                 rule = {
-                    "domain": [domain]
+                    # "domain": [domain]
+                    "domain_suffix": [domain]
                 }
                 rules.append(rule)
     

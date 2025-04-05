@@ -2,7 +2,7 @@ name: Auto Update Rules
 
 on:
   schedule:
-    - cron: '20 16 * * *'  # Runs at 00:20 UTC+8
+    - cron: '30 1 */2 * *'  # Runs at 09:30 UTC+8 every 2 days
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
